@@ -1,0 +1,67 @@
+-- 1. Create a numbers table using a recursive query (1 to 100)
+WITH Numbers AS (
+    SELECT 1 AS Num
+    UNION ALL
+    SELECT Num + 1
+    FROM Numbers
+    WHERE Num < 100
+)
+SELECT * FROM Numbers;
+
+-- 2. Show orders after 2022 with customer names
+SELECT o.OrderID, c.FirstName + ' ' + c.LastName AS CustomerName, o.OrderDate
+FROM Orders o
+JOIN Customers c ON o.CustomerID = c.CustomerID
+WHERE o.OrderDate > '2022-12-31';
+
+-- 3. Rank products by total quantity sold (DENSE_RANK)
+SELECT ProductID, 
+       SUM(Quantity) AS TotalSold,
+       DENSE_RANK() OVER (ORDER BY SUM(Quantity) DESC) AS Rank
+FROM ProductSales
+GROUP BY ProductID;
+
+-- 4. Select customer names starting with 'A'
+SELECT CustomerName
+FROM Customers
+WHERE CustomerName LIKE 'A%';
+
+-- 5. Add conditional column for price category
+SELECT ProductID, ProductName, Price,
+       CASE 
+           WHEN Price > 1000 THEN 'High'
+           ELSE 'Low'
+       END AS PriceCategory
+FROM Products1;
+
+-- 6. Difference between Products1 and Products_Discounted using EXCEPT
+SELECT * FROM Products1
+EXCEPT
+SELECT * FROM Products_Discounted;
+
+-- 7. Employees in 'Sales' department with salary > 60000
+SELECT e.EmployeeID, e.FirstName, e.LastName, e.Salary
+FROM Employees e
+JOIN Departments d ON e.DepartmentID = d.DepartmentID
+WHERE d.DepartmentName = 'Sales' AND e.Salary > 60000;
+
+-- 8. Employees with salary greater than department average
+SELECT e.EmployeeID, e.FirstName, e.LastName, e.Salary, e.DepartmentID
+FROM Employees e
+WHERE e.Salary > (
+    SELECT AVG(Salary)
+    FROM Employees
+    WHERE DepartmentID = e.DepartmentID
+);
+
+-- 9. Customers with total sales over 1500
+SELECT CustomerID, SUM(SaleAmount) AS TotalSales
+FROM ProductSales
+GROUP BY CustomerID
+HAVING SUM(SaleAmount) > 1500;
+
+-- 10. Top 3 customers with highest total invoice amount
+SELECT TOP 3 CustomerID, SUM(InvoiceAmount) AS TotalSpent
+FROM Invoices
+GROUP BY CustomerID
+ORDER BY TotalSpent DESC;
